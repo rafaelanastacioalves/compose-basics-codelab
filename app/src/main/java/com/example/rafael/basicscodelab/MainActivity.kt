@@ -1,0 +1,176 @@
+package com.example.rafael.basicscodelab
+
+import android.content.DialogInterface.OnShowListener
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.rafael.basicscodelab.ui.theme.BasicsCodelabTheme
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            BasicsCodelabTheme {
+                // A surface container using the 'background' color from the theme
+                MyApp(Modifier)
+            }
+        }
+    }
+}
+@Composable
+fun OnboardingScreen(modifier: Modifier = Modifier,
+                     onContinueClicked: () -> Unit) {
+    // TODO: This state should be hoisted
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Welcome to the Basics Codelab!")
+        Button(
+            modifier = Modifier.padding(vertical = 24.dp),
+            onClick =  onContinueClicked
+        ) {
+            Text("Continue")
+        }
+    }
+}
+@Preview(showBackground = true, widthDp = 320, heightDp = 320)
+@Composable
+fun OnboardingPreview() {
+    BasicsCodelabTheme {
+        OnboardingScreen(onContinueClicked = {})
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun Greeting(name: String) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val extraValue by animateDpAsState(
+        if(expanded) 48.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ))
+    val color by animateColorAsState(
+        targetValue = if (expanded) Color.Green else Color.Gray,
+        animationSpec = tween(durationMillis = 250)
+    )
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        ),
+        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+        onClick =  { expanded = !expanded }
+    ) {
+
+        Row(modifier = Modifier
+            .padding(4.dp)
+            .animateContentSize(animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ))) {
+            Column(modifier = Modifier
+                .weight(1f)
+                ) {
+                Text("Hello,")
+                Text(
+                    text = name, style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                )
+                if (expanded) {
+                    Text(
+                        text = ("Composem ipsum color sit lazy, " +
+                                "padding theme elit, sed do bouncy. ").repeat(4)
+                    )
+                }
+            }
+            IconButton(modifier = Modifier,
+                onClick = {}
+            ) {
+                val contentDescription = if (expanded) stringResource(R.string.show_less) else stringResource(
+                                    R.string.show_more)
+                Icon(imageVector = if (expanded) Icons.Filled.ExpandLess
+                                else Icons.Filled.ExpandMore
+                    , contentDescription)
+            }
+        }
+    }
+}
+@Composable
+fun MyApp(modifier: Modifier = Modifier) {
+
+    var shouldShowOnboarding by rememberSaveable  { mutableStateOf(true) }
+
+    Surface(modifier) {
+        if (shouldShowOnboarding) {
+            OnboardingScreen(
+               onContinueClicked = {shouldShowOnboarding = false}
+            )
+        } else {
+            Greetings(names = List(1000) { "$it" })
+        }
+    }
+}
+
+@Composable
+private fun Greetings(
+    modifier: Modifier = Modifier,
+    names: List<String> = listOf("World", "Compose")
+) {
+    LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
+
+        items(items = names) { name ->
+            Greeting(name = name)
+        }
+
+    }
+}
+
+@Preview(
+    showBackground = true,
+    widthDp = 320,
+    uiMode = UI_MODE_NIGHT_YES,
+    name = "Dark"
+)
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+private fun GreetingsPreview() {
+    BasicsCodelabTheme {
+        Greetings()
+    }
+}
+
+@Preview
+@Composable
+fun MyAppPreview() {
+    BasicsCodelabTheme {
+        MyApp(Modifier.fillMaxSize())
+    }
+}
